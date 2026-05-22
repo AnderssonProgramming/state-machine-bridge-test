@@ -13,7 +13,7 @@ ignore  = ["E501"]
 "backend/tests/*" = ["S101"]
 
 [tool.mypy]
-python_version         = "3.11"
+python_version         = "3.13"
 strict                 = true
 ignore_missing_imports = true
 disallow_untyped_decorators = false   # AWS Powertools decorators are untyped

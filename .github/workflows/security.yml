@@ -6,13 +6,14 @@ on:
   schedule:
     - cron: "0 6 * * 1"  # Mondays 06:00 UTC
 
+permissions:
+  security-events: write
+  contents: read
+
 jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      contents: read
     strategy:
       matrix:
         language: [python, javascript-typescript]
@@ -31,14 +32,22 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
   dependency-audit:
-    name: Dependency Audit (pip-audit)
+    name: Dependency Audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: NPM Audit
+        working-directory: ./frontend
+        run: npm audit
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install pip-audit
         run: pip install pip-audit
+
       - name: Audit backend dependencies
-        run: pip-audit -r backend/requirements.txt
+        working-directory: ./backend
+        run: pip-audit -r requirements.txt

@@ -14,11 +14,11 @@
 
 ---
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.13+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![REST API](https://img.shields.io/badge/REST-API-FF6B35?style=for-the-badge&logo=fastapi&logoColor=white)
-![Status](https://img.shields.io/badge/Status-In%20Progress-yellow?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Complete-2EA44F?style=for-the-badge)
 ![Author](https://img.shields.io/badge/Author-Andersson%20Sánchez-6C5CE7?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-A9FF62?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Apache%202.0-A9FF62?style=for-the-badge)
 
 ---
 
@@ -152,29 +152,27 @@ The service follows a **3-layer architecture** for separation of concerns:
 ## 📁 Project Structure
 
 ```
-order-state-machine/
-├── src/
-│   ├── handlers/              # Layer 1 — HTTP route handlers
-│   │   ├── order_handler.py
-│   │   └── event_handler.py
-│   ├── services/              # Layer 2 — Business logic
-│   │   ├── order_service.py
-│   │   ├── state_machine.py
-│   │   └── event_handlers/    # Per-event business rules
-│   │       └── payment_failed_handler.py
-│   ├── repositories/          # Layer 3 — Data access
-│   │   ├── order_repository.py
-│   │   └── support_repository.py
-│   ├── models/                # Domain entities
-│   │   ├── order.py
-│   │   └── event.py
-│   └── main.py
-├── tests/
-│   ├── test_state_machine.py
-│   ├── test_order_service.py
-│   └── test_handlers.py
-├── requirements.txt
-├── .env.example
+state-machine-bridge-test/
+├── backend/
+│   ├── src/
+│   │   ├── domain/             # Entities + state machine
+│   │   ├── handlers/           # FastAPI routers
+│   │   ├── repositories/       # Memory + DynamoDB adapters
+│   │   ├── services/           # Orchestration + handlers
+│   │   └── main.py
+│   ├── tests/
+│   ├── requirements.txt
+│   └── .env.example
+├── frontend/
+│   ├── src/
+│   │   ├── api/                # Axios client
+│   │   ├── components/         # Layout + Chat widget + diagram
+│   │   └── pages/              # Dashboard + Order views
+│   └── .env.example
+├── context/
+│   └── sainapsis_context.txt
+├── docs/adr/
+├── template.yaml               # AWS SAM
 └── README.md
 ```
 
@@ -195,10 +193,10 @@ order-state-machine/
 
 ### Technical Stack
 
-- **Language:** Python 3.11+
-- **Framework:** FastAPI
-- **Storage:** In-memory dictionary (repository-abstracted, swappable)
-- **Testing:** pytest
+- **Language:** Python 3.13
+- **Framework:** FastAPI + Mangum (AWS Lambda ASGI adapter)
+- **Storage:** In-memory for local dev, DynamoDB-ready via repository swap
+- **Testing:** pytest + coverage
 
 ---
 
@@ -206,7 +204,8 @@ order-state-machine/
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.13+
+- Node.js 22+
 - pip
 
 ### Installation
@@ -216,32 +215,61 @@ order-state-machine/
 git clone https://github.com/AnderssonProgramming/state-machine-bridge-test.git
 cd state-machine-bridge-test
 
-# 2. Create and activate virtual environment
+# 2. Backend setup
+cd backend
 python -m venv .venv
 source .venv/bin/activate          # Linux / macOS
 .venv\Scripts\activate             # Windows
-
-# 3. Install dependencies
 pip install -r requirements.txt
+cp .env.example .env
 
-# 4. Copy environment variables
+# 3. Frontend setup
+cd ../frontend
+npm install
 cp .env.example .env
 ```
 
-### Run the server
+### Run the backend
 
 ```bash
+cd backend
 uvicorn src.main:app --reload --port 8000
 ```
 
 The API will be available at `http://localhost:8000`.
 Interactive docs at `http://localhost:8000/docs`.
 
+### Run the frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+The UI will be available at `http://localhost:5173` (Vite default).
+
 ### Run tests
 
 ```bash
-pytest tests/ -v
+cd backend
+pytest --cov=src tests/ -v
 ```
+
+---
+
+## 🔐 Environment Variables
+
+**Backend (`backend/.env`)**
+
+- `ANTHROPIC_API_KEY` — Claude API key for the chatbot
+- `REPOSITORY_BACKEND` — `memory` or `dynamodb`
+- `DYNAMODB_TABLE_NAME` — table name for orders (when using DynamoDB)
+- `DYNAMODB_TICKETS_TABLE_NAME` — table name for support tickets
+- `AWS_REGION` — AWS region for DynamoDB
+
+**Frontend (`frontend/.env`)**
+
+- `VITE_API_URL` — base URL for the FastAPI backend (default: `http://localhost:8000`)
 
 ---
 
@@ -265,8 +293,20 @@ POST /orders
 ```json
 {
   "orderId": "ord-a1b2c3",
+  "productIds": ["prod-001", "prod-002"],
+  "amount": 249.99,
   "state": "Pending",
-  "createdAt": "2026-05-21T10:00:00Z"
+  "createdAt": "2026-05-21T10:00:00Z",
+  "updatedAt": "2026-05-21T10:00:00Z",
+  "history": [
+    {
+      "fromState": null,
+      "toState": "Pending",
+      "eventType": "init",
+      "timestamp": "2026-05-21T10:00:00Z",
+      "metadata": {}
+    }
+  ]
 }
 ```
 
@@ -323,8 +363,20 @@ GET /orders/{orderId}
   "amount": 249.99,
   "state": "PendingPayment",
   "history": [
-    { "from": null, "to": "Pending", "event": "init", "timestamp": "..." },
-    { "from": "Pending", "to": "PendingPayment", "event": "noVerificationNeeded", "timestamp": "..." }
+    {
+      "fromState": null,
+      "toState": "Pending",
+      "eventType": "init",
+      "timestamp": "...",
+      "metadata": {}
+    },
+    {
+      "fromState": "Pending",
+      "toState": "PendingPayment",
+      "eventType": "noVerificationNeeded",
+      "timestamp": "...",
+      "metadata": {}
+    }
   ]
 }
 ```
@@ -340,7 +392,7 @@ Declaring transitions as a dictionary makes it trivial to add new states or even
 Requirement 4 asks for logic tied to a specific event (`paymentFailed`). A registry pattern (`{ "paymentFailed": PaymentFailedHandler }`) keeps each rule isolated, testable, and easy to extend — exactly what "easily extendable in the future" means.
 
 **Why in-memory storage?**
-The repository abstraction (`OrderRepository`) decouples persistence from business logic. Swapping to PostgreSQL or DynamoDB requires only a new repository implementation — zero changes to service or handler layers.
+The repository abstraction (`OrderRepository`) decouples persistence from business logic. Local development uses an in-memory adapter, while Lambda deployments switch to DynamoDB by configuration — no changes needed in service or handler layers.
 
 ---
 

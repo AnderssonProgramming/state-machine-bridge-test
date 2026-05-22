@@ -213,8 +213,8 @@ order-state-machine/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/anderssondc/order-state-machine.git
-cd order-state-machine
+git clone https://github.com/AnderssonProgramming/state-machine-bridge-test.git
+cd state-machine-bridge-test
 
 # 2. Create and activate virtual environment
 python -m venv .venv

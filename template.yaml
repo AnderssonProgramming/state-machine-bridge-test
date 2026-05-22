@@ -1,51 +1,61 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  sainapsis-bridge-backend
-  SAM Template for Bridge State Machine API
+  Order Processing State Machine - Sainapsis Technical Test.
+  FastAPI on AWS Lambda (via Mangum) + HTTP API Gateway + DynamoDB.
 
 Globals:
   Function:
     Timeout: 30
-    MemorySize: 256
-    Runtime: python3.13
-    Architectures:
-      - x86_64
+    MemorySize: 512
+    Runtime: python3.11
+    Tracing: Active
     Environment:
       Variables:
-        POWERTOOLS_SERVICE_NAME: "bridge-backend"
-        POWERTOOLS_METRICS_NAMESPACE: "Bridge"
-        LOG_LEVEL: "INFO"
-        ENVIRONMENT: "dev"
-        ANTHROPIC_API_KEY: "{{resolve:secretsmanager:AnthropicApiKey:SecretString}}" # Assuming stored in Secrets Manager
+        REPOSITORY_BACKEND: dynamodb
+        DYNAMODB_TABLE_NAME: !Ref OrdersTable
+        DYNAMODB_TICKETS_TABLE_NAME: !Ref SupportTicketsTable
+        POWERTOOLS_SERVICE_NAME: order-state-machine
+        POWERTOOLS_METRICS_NAMESPACE: OrderStateMachine
+        LOG_LEVEL: INFO
+
+Parameters:
+  AnthropicApiKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: API key for the Anthropic Claude API (chatbot feature).
 
 Resources:
-  BackendApiFunction:
+  OrderApiFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: backend/
       Handler: src.main.handler
+      Description: FastAPI app serving the order state machine API.
       Environment:
         Variables:
-          REPOSITORY_BACKEND: "dynamodb"
-          DYNAMODB_TABLE_NAME: !Ref OrdersTable
-          DYNAMODB_TICKETS_TABLE_NAME: !Ref SupportTicketsTable
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            Path: /{proxy+}
-            Method: ANY
+          ANTHROPIC_API_KEY: !Ref AnthropicApiKey
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref OrdersTable
         - DynamoDBCrudPolicy:
             TableName: !Ref SupportTicketsTable
+      Events:
+        Root:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: ANY
+        Proxy:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
 
   OrdersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: BridgeOrders
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: orderId
@@ -57,7 +67,6 @@ Resources:
   SupportTicketsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: BridgeSupportTickets
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: ticketId
@@ -67,6 +76,9 @@ Resources:
           KeyType: HASH
 
 Outputs:
-  ApiEndpoint:
-    Description: "API Gateway endpoint URL for Prod environment"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  ApiUrl:
+    Description: Base URL of the deployed HTTP API.
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  OrdersTableName:
+    Description: DynamoDB orders table name.
+    Value: !Ref OrdersTable

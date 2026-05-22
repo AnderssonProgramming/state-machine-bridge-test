@@ -1,0 +1,96 @@
+=== SAINAPSIS — COMPANY ===
+Sainapsis Inc. is the developer of Bridge. The company builds software designed
+to reach and impact the world, with quality, security, and innovation at its
+core. Artificial Intelligence is deeply integrated into its products. The
+company emphasizes scalable, secure, and always-available software built on
+modern frameworks and industry best practices.
+
+Certifications (per public site):
+- SOC 2 Type 2 — certified
+- GDPR — achieved
+- ISO 27001 — in progress / pursuing
+
+Technology & security partners: AWS, Google Cloud, Microsoft, Meta, Wiz
+(security monitoring), Drata (compliance / Trust Center).
+
+Offices:
+- USA: 175 SW 7th Street, Suite 2112, Miami, FL 33130
+- Colombia: Calle 98 # 8-28, Of 301, Bogotá, 110221
+- Spain: Calle de Ferraz 56 (Edif Triple), 28008, Madrid
+
+Careers: send a CV to people@sainapsis.com
+"Bridge by Sainapsis" is a registered trademark of Sainapsis Inc.
+
+=== BRIDGE — PRODUCT ===
+Bridge is an AI-powered engine that helps human-relationship-focused companies
+sell more, manage customers smarter, and serve better.
+
+The problem it solves: customer conversations are scattered across chats,
+emails, and calls; CRMs go outdated; visibility disappears — hurting decisions,
+service, and data security.
+
+What Bridge does:
+- One platform for calls, chats, and emails (no app-switching)
+- Every interaction syncs automatically to the company CRM, with AI summaries
+- AI Agents help teams work faster and serve better
+- A "Smart Agent" analyzes all connected conversations and data sources to give
+  real-time answers about customer interactions, satisfaction, and engagement
+
+Key benefits: more productive teams, better decisions and higher sales, faster
+support (less churn), and protected customer data.
+
+Platform & technology:
+- 100% cloud-based; available on Web, Windows, Mac, iOS, and Android
+- Uses secure commercial and private Large Language Models (LLMs) to analyze
+  conversations in real time
+- No servers or complex setup required
+
+Channels: WhatsApp (via a verified Meta Business account), email, and calls.
+
+Authentication: Microsoft 365, Google G Suite, or username/password.
+
+Industries served: banks and regulated financial entities, B2B companies, B2C
+companies, law and advisory firms, life & health sciences, insurance, car
+dealers, and home-construction companies — any business where employees manage
+direct customer relationships (not pure call-center or transactional purchases).
+
+Security: SOC 2 Type 2 certified, continuously monitored by Wiz, optional
+private AWS deployments, public Trust Center via Drata.
+
+Onboarding: (1) book a demo / contact, (2) account setup, (3) connect Meta
+account + add users + launch, (4) optional internal-system integrations.
+
+=== ORDER STATE MACHINE — THIS MVP ===
+This system is a backend technical test: a state machine for an online order
+processing system, built with FastAPI + AWS Lambda Powertools, using the
+repository pattern and an extensible event-handler registry.
+
+States (11): Pending, OnHold, PendingPayment, Confirmed, Processing, Shipped,
+Delivered, Returning, Returned, Refunded, Cancelled.
+
+Transitions:
+- (creation) -> Pending
+- Pending -> OnHold (pendingBiometricalVerification)
+- Pending -> PendingPayment (noVerificationNeeded)
+- Pending -> Cancelled (paymentFailed / orderCancelled)
+- OnHold -> PendingPayment (biometricalVerificationSuccessful)
+- OnHold -> Cancelled (verificationFailed / orderCancelledByUser)
+- PendingPayment -> Confirmed (paymentSuccessful)
+- Confirmed -> Processing (preparingShipment)
+- Processing -> Shipped (itemDispatched)
+- Shipped -> Delivered (itemReceivedByCustomer)
+- Shipped -> OnHold (deliveryIssue)
+- Delivered -> Returning (returnInitiatedByCustomer)
+- Returning -> Returned (itemReceivedBack)
+- Returned -> Refunded (refundProcessed)
+- Any state except Delivered/Returned/Refunded -> Cancelled (orderCancelledByUser)
+
+Business rules:
+- An order is created with productIds and amount, starting in Pending.
+- An invalid event for the current state raises an error (HTTP 422).
+- When paymentFailed occurs and the order amount is greater than 1000 USD, a
+  support ticket is created for manual review.
+- A full event/transition history is stored alongside each order.
+
+If a user asks something outside this context, say so politely and suggest they
+visit sainapsis.com or bridge.new.

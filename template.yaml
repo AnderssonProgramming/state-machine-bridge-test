@@ -8,7 +8,7 @@ Globals:
   Function:
     Timeout: 30
     MemorySize: 512
-    Runtime: python3.11
+    Runtime: python3.13
     Tracing: Active
     Environment:
       Variables:
@@ -33,14 +33,10 @@ Resources:
       CodeUri: backend/
       Handler: src.main.handler
       Description: FastAPI app serving the order state machine API.
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
       Environment:
         Variables:
           ANTHROPIC_API_KEY: !Ref AnthropicApiKey
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref OrdersTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SupportTicketsTable
       Events:
         Root:
           Type: HttpApi
@@ -52,7 +48,8 @@ Resources:
           Properties:
             Path: /{proxy+}
             Method: ANY
-
+      Tracing: Active
+      
   OrdersTable:
     Type: AWS::DynamoDB::Table
     Properties:

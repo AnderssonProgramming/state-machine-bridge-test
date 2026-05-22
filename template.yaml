@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sainapsis-bridge-backend
+  SAM Template for Bridge State Machine API
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        POWERTOOLS_SERVICE_NAME: "bridge-backend"
+        POWERTOOLS_METRICS_NAMESPACE: "Bridge"
+        LOG_LEVEL: "INFO"
+        ENVIRONMENT: "dev"
+        ANTHROPIC_API_KEY: "{{resolve:secretsmanager:AnthropicApiKey:SecretString}}" # Assuming stored in Secrets Manager
+
+Resources:
+  BackendApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: src.main.handler
+      Environment:
+        Variables:
+          REPOSITORY_BACKEND: "dynamodb"
+          DYNAMODB_TABLE_NAME: !Ref OrdersTable
+          DYNAMODB_TICKETS_TABLE_NAME: !Ref SupportTicketsTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SupportTicketsTable
+
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BridgeOrders
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+
+  SupportTicketsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BridgeSupportTickets
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: ticketId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ticketId
+          KeyType: HASH
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL for Prod environment"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

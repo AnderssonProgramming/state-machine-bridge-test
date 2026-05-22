@@ -1,11 +1,11 @@
 [tool.black]
 line-length = 88
-target-version = ["py311"]
+target-version = ["py313"]
 include = '\.pyi?$'
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py313"
 select = ["E", "F", "I", "N", "W", "B", "UP"]
 ignore  = ["E501"]
 
@@ -13,7 +13,7 @@ ignore  = ["E501"]
 "backend/tests/*" = ["S101"]
 
 [tool.mypy]
-python_version      = "3.11"
+python_version      = "3.13"
 strict              = true
 ignore_missing_imports = true
 pretty              = true

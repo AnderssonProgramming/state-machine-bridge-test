@@ -20,5 +20,6 @@ pretty              = true
 
 [tool.pytest.ini_options]
 testpaths    = ["backend/tests"]
+pythonpath   = ["backend"]
 asyncio_mode = "auto"
-addopts      = "-v --cov=backend/src --cov-report=term-missing --cov-report=xml"
+addopts      = "-v --cov=src --cov-report=term-missing --cov-report=xml"

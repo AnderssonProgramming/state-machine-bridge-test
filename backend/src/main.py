@@ -67,4 +67,4 @@ async def health() -> dict[str, str]:
 
 
 # AWS Lambda ASGI handler
-handler = Mangum(app)
+handler = Mangum(app, lifespan="off")

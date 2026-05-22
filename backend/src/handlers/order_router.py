@@ -2,57 +2,66 @@
 
 from fastapi import APIRouter, Depends, status
 
-from src.domain.order import Order
+from src.domain.order import Order, TransitionLog
 from src.handlers.dependencies import get_order_service
 from src.models.schemas import (
     AvailableEventsResponse,
     CreateOrderRequest,
     EventRequest,
     OrderResponse,
+    TransitionLogResponse,
     TransitionResponse,
 )
 from src.services.order_service import OrderService
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
+_BY_ALIAS = {"response_model_by_alias": True}
+
+
+def _map_log(entry: TransitionLog) -> TransitionLogResponse:
+    """Map a domain TransitionLog to its response model by field name."""
+    return TransitionLogResponse(
+        from_state=entry.from_state,
+        to_state=entry.to_state,
+        event_type=entry.event_type,
+        timestamp=entry.timestamp,
+        metadata=entry.metadata,
+    )
+
 
 def _to_response(order: Order) -> OrderResponse:
     """Map an Order entity to its API response model."""
     return OrderResponse(
-        orderId=order.order_id,
-        productIds=order.product_ids,
+        order_id=order.order_id,
+        product_ids=order.product_ids,
         amount=order.amount,
         state=order.state,
-        createdAt=order.created_at,
-        updatedAt=order.updated_at,
-        history=[
-            TransitionLogResponse_from(entry) for entry in order.history
-        ],
+        created_at=order.created_at,
+        updated_at=order.updated_at,
+        history=[_map_log(entry) for entry in order.history],
     )
 
 
-def TransitionLogResponse_from(entry):  # noqa: N802
-    """Map a TransitionLog dataclass to a response dict (alias keys)."""
-    return {
-        "fromState": entry.from_state,
-        "toState": entry.to_state,
-        "eventType": entry.event_type,
-        "timestamp": entry.timestamp,
-        "metadata": entry.metadata,
-    }
-
-
-@router.post("", status_code=status.HTTP_201_CREATED, response_model=OrderResponse)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=OrderResponse,
+    **_BY_ALIAS,
+)
 def create_order(
     payload: CreateOrderRequest,
     service: OrderService = Depends(get_order_service),
 ) -> OrderResponse:
     """Create a new order in the Pending state."""
-    order = service.create_order(payload.product_ids, payload.amount)
-    return _to_response(order)
+    return _to_response(service.create_order(payload.product_ids, payload.amount))
 
 
-@router.post("/{order_id}/events", response_model=TransitionResponse)
+@router.post(
+    "/{order_id}/events",
+    response_model=TransitionResponse,
+    **_BY_ALIAS,
+)
 def apply_event(
     order_id: str,
     payload: EventRequest,
@@ -62,15 +71,15 @@ def apply_event(
     previous_state = service.get_order(order_id).state.value
     order = service.apply_event(order_id, payload.event_type, payload.metadata)
     return TransitionResponse(
-        orderId=order.order_id,
-        previousState=previous_state,
-        currentState=order.state.value,
-        eventType=payload.event_type,
+        order_id=order.order_id,
+        previous_state=previous_state,
+        current_state=order.state.value,
+        event_type=payload.event_type,
         timestamp=order.updated_at,
     )
 
 
-@router.get("/{order_id}", response_model=OrderResponse)
+@router.get("/{order_id}", response_model=OrderResponse, **_BY_ALIAS)
 def get_order(
     order_id: str,
     service: OrderService = Depends(get_order_service),
@@ -79,7 +88,7 @@ def get_order(
     return _to_response(service.get_order(order_id))
 
 
-@router.get("", response_model=list[OrderResponse])
+@router.get("", response_model=list[OrderResponse], **_BY_ALIAS)
 def list_orders(
     service: OrderService = Depends(get_order_service),
 ) -> list[OrderResponse]:
@@ -88,7 +97,9 @@ def list_orders(
 
 
 @router.get(
-    "/{order_id}/available-events", response_model=AvailableEventsResponse
+    "/{order_id}/available-events",
+    response_model=AvailableEventsResponse,
+    **_BY_ALIAS,
 )
 def available_events(
     order_id: str,
@@ -97,7 +108,7 @@ def available_events(
     """Return valid next events for an order (powers the frontend dropdown)."""
     state, events = service.available_events(order_id)
     return AvailableEventsResponse(
-        orderId=order_id,
+        order_id=order_id,
         state=state,
-        availableEvents=[event.value for event in events],
+        available_events=[event.value for event in events],
     )

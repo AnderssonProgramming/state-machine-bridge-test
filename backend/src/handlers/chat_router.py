@@ -1,5 +1,7 @@
 """FastAPI route for the AI chatbot."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 
 from src.handlers.dependencies import get_chat_service
@@ -9,10 +11,10 @@ from src.services.chat_service import ChatService
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
-@router.post("", response_model=ChatResponse)
+@router.post("")
 def chat(
     payload: ChatRequest,
-    service: ChatService = Depends(get_chat_service),
+    service: Annotated[ChatService, Depends(get_chat_service)],
 ) -> ChatResponse:
     """Return an AI assistant reply grounded in Sainapsis context."""
     reply = service.reply(payload.message, payload.conversation_history)

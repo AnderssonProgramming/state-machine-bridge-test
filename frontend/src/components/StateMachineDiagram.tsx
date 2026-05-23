@@ -38,7 +38,7 @@ const TRANSITIONS: Array<[string, string, string]> = [
 
 export default function StateMachineDiagram({
   currentState,
-}: StateMachineDiagramProps) {
+}: Readonly<StateMachineDiagramProps>) {
   const nodes: Node[] = useMemo(
     () =>
       Object.entries(NODE_POSITIONS).map(([state, position]) => {

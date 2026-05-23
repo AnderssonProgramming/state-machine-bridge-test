@@ -61,9 +61,9 @@ export default function ChatWidget() {
                 machine works.
               </p>
             )}
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <div
-                key={index}
+                key={message.id || `${message.role}-${message.timestamp}`}
                 className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                   message.role === "user"
                     ? "ml-auto bg-brand text-white"

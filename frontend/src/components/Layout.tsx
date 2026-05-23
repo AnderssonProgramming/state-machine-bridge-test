@@ -5,7 +5,7 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children }: Readonly<LayoutProps>) {
   return (
     <div className="min-h-screen">
       <header className="bg-gradient-to-r from-navy via-brand to-bright text-white">

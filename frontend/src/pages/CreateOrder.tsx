@@ -15,7 +15,7 @@ export default function CreateOrder() {
       .split(",")
       .map((p) => p.trim())
       .filter(Boolean);
-    const amountValue = parseFloat(amount);
+    const amountValue = Number.parseFloat(amount);
 
     if (productIds.length === 0) {
       setError("Add at least one product ID.");
@@ -41,10 +41,11 @@ export default function CreateOrder() {
       <h1 className="mb-6 text-2xl font-bold text-navy">Create Order</h1>
       <div className="space-y-5 rounded-xl border border-gray-200 bg-white p-6">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="productIds" className="mb-1 block text-sm font-medium text-gray-700">
             Product IDs <span className="text-gray-400">(comma-separated)</span>
           </label>
           <input
+            id="productIds"
             type="text"
             value={productInput}
             onChange={(e) => setProductInput(e.target.value)}
@@ -53,10 +54,11 @@ export default function CreateOrder() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="amount" className="mb-1 block text-sm font-medium text-gray-700">
             Amount (USD)
           </label>
           <input
+            id="amount"
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}

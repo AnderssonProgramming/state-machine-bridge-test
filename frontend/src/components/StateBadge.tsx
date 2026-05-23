@@ -16,7 +16,7 @@ const STATE_COLORS: Record<string, string> = {
   Cancelled: "bg-red-100 text-red-700",
 };
 
-export default function StateBadge({ state }: StateBadgeProps) {
+export default function StateBadge({ state }: Readonly<StateBadgeProps>) {
   const color = STATE_COLORS[state] ?? "bg-gray-100 text-gray-700";
   return (
     <span

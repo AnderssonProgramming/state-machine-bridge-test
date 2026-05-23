@@ -106,8 +106,8 @@ export default function OrderDetail() {
       <div className="rounded-xl border border-gray-200 bg-white p-6">
         <h2 className="mb-3 text-sm font-semibold text-gray-700">History</h2>
         <ol className="space-y-2">
-          {order.history.map((entry, index) => (
-            <li key={index} className="flex flex-wrap items-center gap-3 text-sm">
+          {order.history.map((entry) => (
+            <li key={`${entry.timestamp}-${entry.toState}`} className="flex flex-wrap items-center gap-3 text-sm">
               <span className="font-mono text-xs text-gray-400">
                 {new Date(entry.timestamp).toLocaleString()}
               </span>

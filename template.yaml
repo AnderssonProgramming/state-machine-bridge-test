@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Order Processing State Machine - Sainapsis Technical Test.
+  FastAPI on AWS Lambda (via Mangum) + HTTP API Gateway + DynamoDB.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.13
+    Tracing: Active
+    Environment:
+      Variables:
+        REPOSITORY_BACKEND: dynamodb
+        DYNAMODB_TABLE_NAME: !Ref OrdersTable
+        DYNAMODB_TICKETS_TABLE_NAME: !Ref SupportTicketsTable
+        POWERTOOLS_SERVICE_NAME: order-state-machine
+        POWERTOOLS_METRICS_NAMESPACE: OrderStateMachine
+        LOG_LEVEL: INFO
+
+Parameters:
+  AnthropicApiKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: API key for the Anthropic Claude API (chatbot feature).
+
+Resources:
+  OrderApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: src.main.handler
+      Description: FastAPI app serving the order state machine API.
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
+      Environment:
+        Variables:
+          ANTHROPIC_API_KEY: !Ref AnthropicApiKey
+      Events:
+        Root:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: ANY
+        Proxy:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+      Tracing: Active
+      
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+
+  SupportTicketsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: ticketId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ticketId
+          KeyType: HASH
+
+Outputs:
+  ApiUrl:
+    Description: Base URL of the deployed HTTP API.
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  OrdersTableName:
+    Description: DynamoDB orders table name.
+    Value: !Ref OrdersTable

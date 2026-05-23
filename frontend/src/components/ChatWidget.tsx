@@ -13,19 +13,35 @@ export default function ChatWidget() {
     const text = input.trim();
     if (!text || loading) return;
 
-    const history = [...messages, { role: "user", content: text } as ChatMessage];
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: text,
+      timestamp: new Date().toISOString(),
+    };
+
+    const history = [...messages, userMessage];
     setMessages(history);
     setInput("");
     setLoading(true);
 
     try {
       const { reply } = await api.chat(text, messages);
-      setMessages([...history, { role: "assistant", content: reply }]);
+      const assistantMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: reply,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([...history, assistantMessage]);
     } catch (e) {
-      setMessages([
-        ...history,
-        { role: "assistant", content: `Error: ${(e as Error).message}` },
-      ]);
+      const errorMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: `Error: ${(e as Error).message}`,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([...history, errorMessage]);
     } finally {
       setLoading(false);
       setTimeout(

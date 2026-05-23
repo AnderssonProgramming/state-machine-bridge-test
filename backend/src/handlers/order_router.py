@@ -1,5 +1,7 @@
 """FastAPI routes for order creation and lifecycle events."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, status
 
 from src.domain.order import Order, TransitionLog
@@ -44,12 +46,11 @@ def _to_response(order: Order) -> OrderResponse:
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
-    response_model=OrderResponse,
     response_model_by_alias=True,
 )
 def create_order(
     payload: CreateOrderRequest,
-    service: OrderService = Depends(get_order_service),
+    service: Annotated[OrderService, Depends(get_order_service)],
 ) -> OrderResponse:
     """Create a new order in the Pending state."""
     return _to_response(service.create_order(payload.product_ids, payload.amount))
@@ -57,13 +58,12 @@ def create_order(
 
 @router.post(
     "/{order_id}/events",
-    response_model=TransitionResponse,
     response_model_by_alias=True,
 )
 def apply_event(
     order_id: str,
     payload: EventRequest,
-    service: OrderService = Depends(get_order_service),
+    service: Annotated[OrderService, Depends(get_order_service)],
 ) -> TransitionResponse:
     """Apply an event to an order, transitioning its state."""
     previous_state = service.get_order(order_id).state.value
@@ -79,12 +79,11 @@ def apply_event(
 
 @router.get(
     "/{order_id}",
-    response_model=OrderResponse,
     response_model_by_alias=True,
 )
 def get_order(
     order_id: str,
-    service: OrderService = Depends(get_order_service),
+    service: Annotated[OrderService, Depends(get_order_service)],
 ) -> OrderResponse:
     """Return a single order with its full history."""
     return _to_response(service.get_order(order_id))
@@ -92,11 +91,10 @@ def get_order(
 
 @router.get(
     "",
-    response_model=list[OrderResponse],
     response_model_by_alias=True,
 )
 def list_orders(
-    service: OrderService = Depends(get_order_service),
+    service: Annotated[OrderService, Depends(get_order_service)],
 ) -> list[OrderResponse]:
     """Return all orders."""
     return [_to_response(order) for order in service.list_orders()]
@@ -104,12 +102,11 @@ def list_orders(
 
 @router.get(
     "/{order_id}/available-events",
-    response_model=AvailableEventsResponse,
     response_model_by_alias=True,
 )
 def available_events(
     order_id: str,
-    service: OrderService = Depends(get_order_service),
+    service: Annotated[OrderService, Depends(get_order_service)],
 ) -> AvailableEventsResponse:
     """Return valid next events for an order (powers the frontend dropdown)."""
     state, events = service.available_events(order_id)

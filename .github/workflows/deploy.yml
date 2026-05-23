@@ -1,6 +1,8 @@
 name: Deploy
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
 
@@ -37,6 +39,7 @@ jobs:
           sam deploy \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
+            --resolve-s3 \
             --stack-name order-state-machine \
             --s3-prefix order-state-machine \
             --region us-east-1 \

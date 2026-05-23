@@ -16,11 +16,9 @@ from src.services.order_service import OrderService
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
-_BY_ALIAS = {"response_model_by_alias": True}
-
 
 def _map_log(entry: TransitionLog) -> TransitionLogResponse:
-    """Map a domain TransitionLog to its response model by field name."""
+    """Map a domain TransitionLog to its response model."""
     return TransitionLogResponse(
         from_state=entry.from_state,
         to_state=entry.to_state,
@@ -47,7 +45,7 @@ def _to_response(order: Order) -> OrderResponse:
     "",
     status_code=status.HTTP_201_CREATED,
     response_model=OrderResponse,
-    **_BY_ALIAS,
+    response_model_by_alias=True,
 )
 def create_order(
     payload: CreateOrderRequest,
@@ -60,7 +58,7 @@ def create_order(
 @router.post(
     "/{order_id}/events",
     response_model=TransitionResponse,
-    **_BY_ALIAS,
+    response_model_by_alias=True,
 )
 def apply_event(
     order_id: str,
@@ -79,7 +77,11 @@ def apply_event(
     )
 
 
-@router.get("/{order_id}", response_model=OrderResponse, **_BY_ALIAS)
+@router.get(
+    "/{order_id}",
+    response_model=OrderResponse,
+    response_model_by_alias=True,
+)
 def get_order(
     order_id: str,
     service: OrderService = Depends(get_order_service),
@@ -88,7 +90,11 @@ def get_order(
     return _to_response(service.get_order(order_id))
 
 
-@router.get("", response_model=list[OrderResponse], **_BY_ALIAS)
+@router.get(
+    "",
+    response_model=list[OrderResponse],
+    response_model_by_alias=True,
+)
 def list_orders(
     service: OrderService = Depends(get_order_service),
 ) -> list[OrderResponse]:
@@ -99,7 +105,7 @@ def list_orders(
 @router.get(
     "/{order_id}/available-events",
     response_model=AvailableEventsResponse,
-    **_BY_ALIAS,
+    response_model_by_alias=True,
 )
 def available_events(
     order_id: str,

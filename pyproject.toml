@@ -16,10 +16,16 @@ ignore = ["E501", "B008"]
 
 [tool.mypy]
 python_version         = "3.13"
+plugins                = ["pydantic.mypy"]
 strict                 = true
 ignore_missing_imports = true
 disallow_untyped_decorators = false   # AWS Powertools decorators are untyped
 pretty                 = true
+
+[tool.pydantic-mypy]
+init_forbid_extra             = false
+init_typed                    = true
+warn_required_dynamic_aliases = false
 
 [tool.pytest.ini_options]
 testpaths    = ["backend/tests"]

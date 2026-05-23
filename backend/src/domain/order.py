@@ -5,6 +5,7 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any
 
 from src.domain.states import OrderState
 
@@ -31,7 +32,7 @@ class TransitionLog:
     to_state: str
     event_type: str
     timestamp: str = field(default_factory=_utc_now)
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -58,15 +59,9 @@ class Order:
             )
 
     def apply_transition(
-        self, new_state: OrderState, event_type: str, metadata: dict
+        self, new_state: OrderState, event_type: str, metadata: dict[str, Any]
     ) -> None:
-        """Move the order to a new state and append to its history.
-
-        Args:
-            new_state: The state to transition into.
-            event_type: The triggering event name.
-            metadata: Event-specific data to record.
-        """
+        """Move the order to a new state and append to its history."""
         self.history.append(
             TransitionLog(
                 from_state=self.state.value,

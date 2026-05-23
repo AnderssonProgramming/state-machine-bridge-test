@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import Layout from "./components/Layout";
 import ChatWidget from "./components/ChatWidget";
 import Dashboard from "./pages/Dashboard";
@@ -16,6 +17,7 @@ export default function App() {
         </Routes>
       </Layout>
       <ChatWidget />
+      <SpeedInsights />
     </BrowserRouter>
   );
 }

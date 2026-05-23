@@ -33,8 +33,12 @@ jobs:
         run: sam build
 
       - name: SAM deploy
-        run: >
-          sam deploy
-          --no-confirm-changeset
-          --no-fail-on-empty-changeset
-          --parameter-overrides AnthropicApiKey=${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          sam deploy \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --stack-name order-state-machine \
+            --s3-prefix order-state-machine \
+            --region us-east-1 \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides AnthropicApiKey=${{ secrets.ANTHROPIC_API_KEY }}

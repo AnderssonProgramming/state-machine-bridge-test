@@ -6,7 +6,6 @@ from src.config import RepositoryBackend
 from src.handlers import dependencies
 
 
-
 def test_get_order_repository_memory():
     """get_order_repository should return InMemoryOrderRepository by default."""
     dependencies.get_order_repository.cache_clear()

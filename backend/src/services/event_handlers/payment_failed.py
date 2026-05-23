@@ -1,5 +1,7 @@
 """Business rule for the paymentFailed event"""
 
+from typing import Any
+
 from aws_lambda_powertools.metrics import MetricUnit
 
 from src.domain.order import Order
@@ -18,7 +20,7 @@ class PaymentFailedHandler(EventHandler):
     def __init__(self, support_repository: SupportRepository) -> None:
         self._support_repository = support_repository
 
-    def handle(self, order: Order, metadata: dict) -> None:
+    def handle(self, order: Order, metadata: dict[str, Any]) -> None:
         """Open a support ticket when the order amount exceeds the threshold."""
         if order.amount <= SUPPORT_REVIEW_THRESHOLD_USD:
             return

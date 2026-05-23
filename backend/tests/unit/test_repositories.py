@@ -2,8 +2,6 @@
 
 import threading
 
-import pytest
-
 from src.domain.order import Order
 from src.repositories.memory import InMemoryOrderRepository, InMemorySupportRepository
 

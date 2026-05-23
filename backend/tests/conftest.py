@@ -1,10 +1,7 @@
 """Shared pytest fixtures for unit and integration tests."""
 
-from unittest.mock import MagicMock
-
 import pytest
 from fastapi.testclient import TestClient
-
 from src.domain.state_machine import StateMachine
 from src.handlers.dependencies import get_chat_service, get_order_service
 from src.main import app

@@ -1,8 +1,9 @@
 """Unit tests for dependency injection wiring."""
 
 from unittest.mock import patch
-from src.handlers import dependencies
+
 from src.config import RepositoryBackend
+from src.handlers import dependencies
 
 
 def test_get_order_repository_memory():

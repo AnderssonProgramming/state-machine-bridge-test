@@ -1,7 +1,6 @@
 """Unit tests for OrderService business logic."""
 
 import pytest
-
 from src.domain.exceptions import InvalidTransitionError, OrderNotFoundError
 from src.domain.states import OrderState
 from src.repositories.memory import InMemoryOrderRepository, InMemorySupportRepository

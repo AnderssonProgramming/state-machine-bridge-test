@@ -1,7 +1,6 @@
 """Unit tests for the state machine transition table and logic."""
 
 import pytest
-
 from src.domain.events import EventType
 from src.domain.exceptions import InvalidTransitionError
 from src.domain.state_machine import (

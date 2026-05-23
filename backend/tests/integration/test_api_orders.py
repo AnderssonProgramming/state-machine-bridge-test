@@ -1,6 +1,5 @@
 """Integration tests for order creation and retrieval endpoints."""
 
-import pytest
 from fastapi.testclient import TestClient
 
 BASE = "/orders"

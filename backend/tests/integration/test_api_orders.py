@@ -43,9 +43,9 @@ def test_create_order_negative_amount_returns_422(client: TestClient) -> None:
 
 
 def test_get_order_returns_200(client: TestClient) -> None:
-    order_id = client.post(
-        BASE, json={"productIds": ["p1"], "amount": 50.0}
-    ).json()["orderId"]
+    order_id = client.post(BASE, json={"productIds": ["p1"], "amount": 50.0}).json()[
+        "orderId"
+    ]
     resp = client.get(f"{BASE}/{order_id}")
     assert resp.status_code == 200
     assert resp.json()["orderId"] == order_id

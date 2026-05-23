@@ -7,13 +7,7 @@ BASE = "/chat"
 
 def test_chat_returns_200(client: TestClient) -> None:
     """The /chat endpoint must return 200 and a mocked reply."""
-    resp = client.post(
-        BASE,
-        json={
-            "message": "Hello",
-            "conversationHistory": []
-        }
-    )
+    resp = client.post(BASE, json={"message": "Hello", "conversationHistory": []})
     assert resp.status_code == 200
     assert resp.json()["reply"] == "Mock reply."
 
@@ -26,9 +20,9 @@ def test_chat_with_history_returns_200(client: TestClient) -> None:
             "message": "What is the next step?",
             "conversationHistory": [
                 {"role": "user", "content": "How does this work?"},
-                {"role": "assistant", "content": "It works via a state machine."}
-            ]
-        }
+                {"role": "assistant", "content": "It works via a state machine."},
+            ],
+        },
     )
     assert resp.status_code == 200
     assert resp.json()["reply"] == "Mock reply."

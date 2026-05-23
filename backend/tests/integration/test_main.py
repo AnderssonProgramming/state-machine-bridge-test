@@ -2,6 +2,7 @@
 
 from fastapi.testclient import TestClient
 
+
 def test_health_check(client: TestClient) -> None:
     """The /health endpoint must return OK status."""
     resp = client.get("/health")

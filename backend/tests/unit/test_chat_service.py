@@ -4,10 +4,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 from src.services.chat_service import ChatService
 
+
 @pytest.fixture
 def mock_anthropic():
     with patch("src.services.chat_service.Anthropic") as mock:
         yield mock
+
 
 def test_chat_service_init(mock_anthropic):
     """ChatService should initialize Anthropic with the API key from settings."""
@@ -16,10 +18,11 @@ def test_chat_service_init(mock_anthropic):
         service = ChatService()
         mock_anthropic.assert_called_once_with(api_key="test-key")
 
+
 def test_chat_service_reply(mock_anthropic):
     """ChatService.reply should call Anthropic API and return the text content."""
     service = ChatService()
-    
+
     # Mock the response structure: response.content[0].text
     mock_response = MagicMock()
     mock_text_block = MagicMock()
@@ -29,13 +32,15 @@ def test_chat_service_reply(mock_anthropic):
     service._client.messages.create.return_value = mock_response
 
     reply = service.reply("Hi", [])
-    
+
     assert reply == "Hello from Claude"
     assert service._client.messages.create.called
+
 
 def test_chat_service_load_context_empty_if_missing():
     """_load_context should return empty string if file doesn't exist."""
     from src.services.chat_service import _load_context
+
     with patch("src.services.chat_service.CONTEXT_FILE") as mock_file:
         mock_file.exists.return_value = False
         assert _load_context() == ""

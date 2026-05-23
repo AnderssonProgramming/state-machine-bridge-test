@@ -22,7 +22,9 @@ def test_save_and_get_by_id(order_repo: InMemoryOrderRepository) -> None:
     assert result.order_id == order.order_id
 
 
-def test_get_by_id_returns_none_for_missing(order_repo: InMemoryOrderRepository) -> None:
+def test_get_by_id_returns_none_for_missing(
+    order_repo: InMemoryOrderRepository,
+) -> None:
     assert order_repo.get_by_id("nonexistent") is None
 
 

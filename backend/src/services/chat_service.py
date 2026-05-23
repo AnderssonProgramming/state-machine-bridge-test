@@ -7,9 +7,7 @@ from anthropic import Anthropic
 
 from src.config import get_settings
 
-CONTEXT_FILE = (
-    Path(__file__).resolve().parents[2] / "context" / "sainapsis_context.txt"
-)
+CONTEXT_FILE = Path(__file__).resolve().parents[2] / "context" / "sainapsis_context.txt"
 MODEL = "claude-sonnet-4-20250514"
 MAX_TOKENS = 1024
 
@@ -53,6 +51,4 @@ class ChatService:
             system=f"{SYSTEM_PREAMBLE}{_load_context()}",
             messages=messages,
         )
-        return "".join(
-            block.text for block in response.content if block.type == "text"
-        )
+        return "".join(block.text for block in response.content if block.type == "text")

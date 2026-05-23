@@ -7,9 +7,9 @@ BASE = "/orders"
 
 def _create_order(client: TestClient, amount: float = 100.0) -> str:
     """Helper: create an order and return its id."""
-    return client.post(
-        BASE, json={"productIds": ["p1"], "amount": amount}
-    ).json()["orderId"]
+    return client.post(BASE, json={"productIds": ["p1"], "amount": amount}).json()[
+        "orderId"
+    ]
 
 
 # ── Single valid transition ────────────────────────────────────────────────────
@@ -73,9 +73,7 @@ def test_payment_failed_low_value_transitions_to_cancelled(
 ) -> None:
     """paymentFailed on a ≤ $1,000 order must reach Cancelled (no side effects)."""
     order_id = _create_order(client, amount=500.0)
-    resp = client.post(
-        f"{BASE}/{order_id}/events", json={"eventType": "paymentFailed"}
-    )
+    resp = client.post(f"{BASE}/{order_id}/events", json={"eventType": "paymentFailed"})
     assert resp.status_code == 200
     assert resp.json()["currentState"] == "Cancelled"
 
@@ -85,9 +83,7 @@ def test_payment_failed_high_value_still_transitions_to_cancelled(
 ) -> None:
     """paymentFailed on a > $1,000 order must also reach Cancelled (+ ticket side effect)."""
     order_id = _create_order(client, amount=1500.0)
-    resp = client.post(
-        f"{BASE}/{order_id}/events", json={"eventType": "paymentFailed"}
-    )
+    resp = client.post(f"{BASE}/{order_id}/events", json={"eventType": "paymentFailed"})
     assert resp.status_code == 200
     assert resp.json()["currentState"] == "Cancelled"
 
@@ -180,9 +176,7 @@ def test_available_events_for_pending_order(client: TestClient) -> None:
 
 def test_available_events_after_transition(client: TestClient) -> None:
     order_id = _create_order(client)
-    client.post(
-        f"{BASE}/{order_id}/events", json={"eventType": "noVerificationNeeded"}
-    )
+    client.post(f"{BASE}/{order_id}/events", json={"eventType": "noVerificationNeeded"})
     resp = client.get(f"{BASE}/{order_id}/available-events")
     body = resp.json()
     assert body["state"] == "PendingPayment"

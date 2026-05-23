@@ -95,9 +95,7 @@ class OrderService:
         """Return all orders."""
         return self._orders.list_all()
 
-    def available_events(
-        self, order_id: str
-    ) -> tuple[OrderState, list[EventType]]:
+    def available_events(self, order_id: str) -> tuple[OrderState, list[EventType]]:
         """Return the current state and valid next events for an order."""
         order = self.get_order(order_id)
         return order.state, self._state_machine.available_events(order.state)

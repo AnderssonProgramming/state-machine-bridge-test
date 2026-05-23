@@ -44,9 +44,7 @@ INVALID_CASES = [
 
 
 @pytest.mark.parametrize("current_state,event", INVALID_CASES)
-def test_invalid_transition_raises(
-    current_state: OrderState, event: EventType
-) -> None:
+def test_invalid_transition_raises(current_state: OrderState, event: EventType) -> None:
     """Events with no defined transition must raise InvalidTransitionError."""
     with pytest.raises(InvalidTransitionError) as exc_info:
         StateMachine().next_state(current_state, event)
@@ -74,6 +72,7 @@ def test_order_cancelled_by_user_blocked_from_terminal(state: OrderState) -> Non
 
 
 # ── available_events ───────────────────────────────────────────────────────────
+
 
 def test_available_events_includes_cancellation_for_pending() -> None:
     """Pending state must offer its normal transitions plus cancellation."""

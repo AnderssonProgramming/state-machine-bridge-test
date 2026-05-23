@@ -5,6 +5,7 @@ register it. No existing code changes.
 """
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 from src.domain.order import Order
 
@@ -13,7 +14,7 @@ class EventHandler(ABC):
     """Side-effect business logic bound to a specific event type."""
 
     @abstractmethod
-    def handle(self, order: Order, metadata: dict) -> None:
+    def handle(self, order: Order, metadata: dict[str, Any]) -> None:
         """Execute business logic for an event during processing."""
 
 

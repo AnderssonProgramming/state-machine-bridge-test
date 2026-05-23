@@ -6,6 +6,7 @@ and converted back to float on read.
 
 import uuid
 from dataclasses import asdict
+from typing import Any
 
 import boto3
 
@@ -44,7 +45,7 @@ class DynamoDBOrderRepository(OrderRepository):
         return [self._from_item(item) for item in response.get("Items", [])]
 
     @staticmethod
-    def _to_item(order: Order) -> dict:
+    def _to_item(order: Order) -> dict[str, Any]:
         """Convert an Order entity into a DynamoDB item."""
         return {
             "orderId": order.order_id,
@@ -57,7 +58,7 @@ class DynamoDBOrderRepository(OrderRepository):
         }
 
     @staticmethod
-    def _from_item(item: dict) -> Order:
+    def _from_item(item: dict[str, Any]) -> Order:
         """Reconstruct an Order entity from a DynamoDB item."""
         return Order(
             product_ids=list(item["productIds"]),

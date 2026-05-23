@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 from anthropic import Anthropic
 
@@ -34,21 +35,16 @@ class ChatService:
         settings = get_settings()
         self._client = Anthropic(api_key=settings.anthropic_api_key)
 
-    def reply(self, message: str, conversation_history: list[dict]) -> str:
-        """Generate an assistant reply for a user message.
-
-        Args:
-            message: The latest user message.
-            conversation_history: Prior messages as {role, content} dicts.
-
-        Returns:
-            The assistant's text reply.
-        """
-        messages = [*conversation_history, {"role": "user", "content": message}]
+    def reply(self, message: str, conversation_history: list[dict[str, Any]]) -> str:
+        """Generate an assistant reply for a user message."""
+        messages: list[dict[str, Any]] = [
+            *conversation_history,
+            {"role": "user", "content": message},
+        ]
         response = self._client.messages.create(
             model=MODEL,
             max_tokens=MAX_TOKENS,
             system=f"{SYSTEM_PREAMBLE}{_load_context()}",
-            messages=messages,
+            messages=messages,  # type: ignore[arg-type]
         )
         return "".join(block.text for block in response.content if block.type == "text")

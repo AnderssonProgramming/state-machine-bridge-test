@@ -1,5 +1,7 @@
 """Application service orchestrating orders, transitions, and event rules."""
 
+from typing import Any
+
 from aws_lambda_powertools.metrics import MetricUnit
 
 from src.domain.events import EventType
@@ -35,7 +37,9 @@ class OrderService:
         return order
 
     @tracer.capture_method
-    def apply_event(self, order_id: str, event_type: str, metadata: dict) -> Order:
+    def apply_event(
+        self, order_id: str, event_type: str, metadata: dict[str, Any]
+    ) -> Order:
         """Apply an event to an order, running business rules and transitioning.
 
         Args:

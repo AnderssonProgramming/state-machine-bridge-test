@@ -6,6 +6,7 @@ for multiple order IDs concurrently.
 
 import threading
 import uuid
+from typing import Any
 
 from src.domain.order import Order
 from src.repositories.base import OrderRepository, SupportRepository
@@ -41,7 +42,7 @@ class InMemorySupportRepository(SupportRepository):
     """In-memory support ticket store."""
 
     def __init__(self) -> None:
-        self._tickets: dict[str, dict] = {}
+        self._tickets: dict[str, dict[str, Any]] = {}
         self._lock = threading.Lock()
 
     def create_ticket(self, order_id: str, reason: str, amount: float) -> str:

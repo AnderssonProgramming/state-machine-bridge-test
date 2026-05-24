@@ -77,7 +77,7 @@ export default function StateMachineDiagram({
   );
 
   return (
-    <div style={{ height: 380 }}>
+    <div className="h-64 sm:h-80 lg:h-[380px]">
       <ReactFlow
         nodes={nodes}
         edges={edges}

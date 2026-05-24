@@ -55,14 +55,14 @@ export default function ChatWidget() {
     <>
       <button
         onClick={() => setOpen((value) => !value)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-2xl text-white shadow-lg hover:bg-bright"
+        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-brand text-xl text-white shadow-lg hover:bg-bright sm:bottom-6 sm:right-6 sm:h-14 sm:w-14 sm:text-2xl"
         aria-label="Toggle chat"
       >
         {open ? "×" : "💬"}
       </button>
 
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 flex h-[480px] w-80 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+        <div className="fixed bottom-20 left-4 right-4 z-50 flex h-[70vh] max-h-[480px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl sm:bottom-24 sm:left-auto sm:right-6 sm:h-[480px] sm:w-80">
           <div className="bg-gradient-to-r from-navy to-brand px-4 py-3 text-white">
             <div className="font-semibold">Sainapsis Assistant</div>
             <div className="text-xs text-white/60">

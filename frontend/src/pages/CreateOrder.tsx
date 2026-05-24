@@ -38,8 +38,8 @@ export default function CreateOrder() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-6 text-2xl font-bold text-navy">Create Order</h1>
-      <div className="space-y-5 rounded-xl border border-gray-200 bg-white p-6">
+      <h1 className="mb-4 text-xl font-bold text-navy sm:mb-6 sm:text-2xl">Create Order</h1>
+      <div className="space-y-5 rounded-xl border border-gray-200 bg-white p-4 sm:p-6">
         <div>
           <label htmlFor="productIds" className="mb-1 block text-sm font-medium text-gray-700">
             Product IDs <span className="text-gray-400">(comma-separated)</span>

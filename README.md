@@ -61,8 +61,6 @@
 | Backend API (API Gateway) | `https://qg7s02wixb.execute-api.us-east-1.amazonaws.com` |
 | API Docs (Swagger UI) | `https://qg7s02wixb.execute-api.us-east-1.amazonaws.com/docs` |
 
-> Fill these in after deploying. The frontend reads its API base from `VITE_API_URL`.
-
 ---
 
 ## 📋 Table of Contents
@@ -514,10 +512,6 @@ mypy, and Conventional Commits enforcement.
 | `SONAR_TOKEN` | `ci.yml` (SonarCloud) |
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` | `deploy.yml` |
 | `ANTHROPIC_API_KEY` | `deploy.yml` (chatbot in Lambda) |
-
-> Note: `codeql.yml` and `sonar-project.properties` currently pin the analysis
-> runtime to Python 3.11 while the application runtime is 3.13 — harmless for
-> static analysis, but worth aligning if you want a single version everywhere.
 
 ---
 

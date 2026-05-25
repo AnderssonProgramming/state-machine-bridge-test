@@ -61,9 +61,19 @@ Onboarding: (1) book a demo / contact, (2) account setup, (3) connect Meta
 account + add users + launch, (4) optional internal-system integrations.
 
 === ORDER STATE MACHINE — THIS MVP ===
-This system is a backend technical test: a state machine for an online order
-processing system, built with FastAPI + AWS Lambda Powertools, using the
-repository pattern and an extensible event-handler registry.
+This system is a full-stack technical test: a state machine for an online order
+processing system, built with a FastAPI backend on AWS Lambda and a React
+frontend on Vercel.
+
+Architecture:
+- Backend: Python 3.13, FastAPI, Mangum (Lambda wrapper), Pydantic v2, AWS
+  Lambda Powertools. Uses Repository Pattern (InMemory/DynamoDB) and Strategy
+  Pattern for event handlers.
+- Frontend: React 18, Vite, TypeScript, TailwindCSS. Includes a Dashboard,
+  Order Creation, and Detail views with a live State Machine Diagram (React Flow).
+- Infra: AWS (ALB/API Gateway, Lambda, DynamoDB) + Vercel (Frontend).
+- CI/CD: GitHub Actions for testing (pytest, coverage), security (CodeQL), and
+  deployment (AWS SAM).
 
 States (11): Pending, OnHold, PendingPayment, Confirmed, Processing, Shipped,
 Delivered, Returning, Returned, Refunded, Cancelled.
@@ -89,8 +99,15 @@ Business rules:
 - An order is created with productIds and amount, starting in Pending.
 - An invalid event for the current state raises an error (HTTP 422).
 - When paymentFailed occurs and the order amount is greater than 1000 USD, a
-  support ticket is created for manual review.
+  support ticket is created for manual review in DynamoDB.
 - A full event/transition history is stored alongside each order.
+- The system is monitored via CloudWatch (Logs, Metrics, Tracing).
+
+Repository details:
+- Project name: state-machine-bridge-test
+- Owner: AnderssonProgramming
+- License: Apache 2.0
+- Live site: https://state-machine-bridge-test.vercel.app/
 
 If a user asks something outside this context, say so politely and suggest they
 visit sainapsis.com or bridge.new.

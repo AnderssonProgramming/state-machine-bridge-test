@@ -43,7 +43,7 @@ class ChatService:
             for m in conversation_history
             if m.get("role") and m.get("content")
         ]
-        
+
         messages: list[dict[str, Any]] = [
             *clean_history,
             {"role": "user", "content": message},

@@ -6,7 +6,7 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 30
+    Timeout: 60
     MemorySize: 512
     Runtime: python3.13
     Tracing: Active
@@ -18,6 +18,16 @@ Globals:
         POWERTOOLS_SERVICE_NAME: order-state-machine
         POWERTOOLS_METRICS_NAMESPACE: OrderStateMachine
         LOG_LEVEL: INFO
+
+  HttpApi:
+    CorsConfiguration:
+      AllowOrigins:
+        - "*"
+      AllowMethods:
+        - "*"
+      AllowHeaders:
+        - "*"
+      MaxAge: 3600
 
 Parameters:
   AnthropicApiKey:

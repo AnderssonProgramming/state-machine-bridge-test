@@ -37,8 +37,15 @@ class ChatService:
 
     def reply(self, message: str, conversation_history: list[dict[str, Any]]) -> str:
         """Generate an assistant reply for a user message."""
+        # Filter history to only include 'role' and 'content' for Anthropic API compatibility
+        clean_history = [
+            {"role": m["role"], "content": m["content"]}
+            for m in conversation_history
+            if m.get("role") and m.get("content")
+        ]
+        
         messages: list[dict[str, Any]] = [
-            *conversation_history,
+            *clean_history,
             {"role": "user", "content": message},
         ]
         response = self._client.messages.create(

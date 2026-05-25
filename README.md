@@ -268,12 +268,11 @@ state-machine-bridge-test/
 │   │   ├── observability/  # Powertools instances (logger, tracer, metrics)
 │   │   ├── config.py       # typed settings (env-driven)
 │   │   └── main.py         # app + Lambda handler
+│   ├── context/            # chatbot grounding (Sainapsis + Bridge + order SM)
 │   ├── tests/              # unit/ + integration/
 │   ├── requirements.txt
 │   └── requirements-dev.txt
 ├── frontend/               # React + Vite app (Dashboard, Create, Detail, ChatWidget, live diagram)
-├── context/
-│   └── sainapsis_context.txt   # chatbot grounding (Sainapsis + Bridge + order SM)
 ├── docs/
 │   ├── adr/                # architecture decision records (ADR-001..005)
 │   └── diagrams/           # eraser.io exports (state-machine.png, architecture.png)

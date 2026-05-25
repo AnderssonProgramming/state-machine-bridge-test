@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     environment: str = "local"
     log_level: str = "INFO"
     powertools_service_name: str = "order-state-machine"
+    allowed_origins: list[str] = ["*"]
 
 
 @lru_cache

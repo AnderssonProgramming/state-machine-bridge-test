@@ -33,7 +33,12 @@ jobs:
 
       - name: SAM build
         run: sam build
-
+      
+      - name: Wait for stack to be stable
+        run: |
+          aws cloudformation wait stack-update-complete \
+            --stack-name order-state-machine \
+            --region us-east-1 || true 
       - name: SAM deploy
         run: |
           sam deploy \

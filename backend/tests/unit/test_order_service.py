@@ -38,7 +38,7 @@ def test_create_order_stores_correct_amount(order_service: OrderService) -> None
 
 def test_apply_event_transitions_state(order_service: OrderService) -> None:
     order = order_service.create_order(PRODUCT_IDS, 100.0)
-    updated = order_service.apply_event(order.order_id, "noVerificationNeeded", {})
+    _, updated = order_service.apply_event(order.order_id, "noVerificationNeeded", {})
     assert updated.state == OrderState.PENDING_PAYMENT
 
 
@@ -62,7 +62,7 @@ def test_apply_event_raises_for_invalid_transition(order_service: OrderService) 
 
 def test_apply_event_raises_for_unknown_event_type(order_service: OrderService) -> None:
     order = order_service.create_order(PRODUCT_IDS, 100.0)
-    with pytest.raises(InvalidTransitionError):
+    with pytest.raises(ValueError):
         order_service.apply_event(order.order_id, "notARealEvent", {})
 
 
@@ -101,7 +101,7 @@ def test_payment_failed_above_threshold_still_transitions(
 ) -> None:
     """Even when a support ticket is created, the order must reach Cancelled."""
     order = order_service.create_order(PRODUCT_IDS, 1500.0)
-    updated = order_service.apply_event(order.order_id, "paymentFailed", {})
+    _, updated = order_service.apply_event(order.order_id, "paymentFailed", {})
     assert updated.state == OrderState.CANCELLED
 
 
@@ -132,9 +132,8 @@ def test_available_events_returns_pending_transitions(
     order_service: OrderService,
 ) -> None:
     order = order_service.create_order(PRODUCT_IDS, 100.0)
-    state, events = order_service.available_events(order.order_id)
+    events = order_service.available_events(order.order_id)
     event_values = [e.value for e in events]
-    assert state == OrderState.PENDING
     assert "noVerificationNeeded" in event_values
     assert "pendingBiometricalVerification" in event_values
     assert "orderCancelledByUser" in event_values

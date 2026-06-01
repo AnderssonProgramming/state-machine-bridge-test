@@ -43,7 +43,9 @@ TRANSITIONS: dict[OrderState, dict[EventType, OrderState]] = {
 
 
 class StateMachine:
-    def next_state(self, current_state: OrderState, event_type: EventType) -> OrderState:
+    def next_state(
+        self, current_state: OrderState, event_type: EventType
+    ) -> OrderState:
         if event_type == EventType.ORDER_CANCELLED_BY_USER:
             if current_state in TERMINAL_FOR_CANCELLATION:
                 raise InvalidTransitionError(current_state.value, event_type.value)

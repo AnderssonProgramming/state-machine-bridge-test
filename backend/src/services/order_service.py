@@ -31,7 +31,9 @@ class OrderService:
         return order
 
     @tracer.capture_method
-    def apply_event(self, order_id: str, event_type: str, metadata: dict[str, Any]) -> tuple[str, Order]:
+    def apply_event(
+        self, order_id: str, event_type: str, metadata: dict[str, Any]
+    ) -> tuple[str, Order]:
         order = self._get_or_raise(order_id)
         previous_state = order.state.value
         event = EventType(event_type)
@@ -45,7 +47,11 @@ class OrderService:
         self._orders.save(order)
         logger.info(
             "Order transitioned",
-            extra={"order_id": order_id, "event_type": event_type, "new_state": next_state.value},
+            extra={
+                "order_id": order_id,
+                "event_type": event_type,
+                "new_state": next_state.value,
+            },
         )
         return previous_state, order
 

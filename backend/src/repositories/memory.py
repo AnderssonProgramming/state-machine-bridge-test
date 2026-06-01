@@ -35,5 +35,9 @@ class InMemorySupportRepository(SupportRepository):
     def create_ticket(self, order_id: str, reason: str, amount: float) -> str:
         ticket_id = f"{TICKET_ID_PREFIX}{uuid.uuid4().hex[:TICKET_ID_LENGTH]}"
         with self._lock:
-            self._tickets[ticket_id] = {"order_id": order_id, "reason": reason, "amount": amount}
+            self._tickets[ticket_id] = {
+                "order_id": order_id,
+                "reason": reason,
+                "amount": amount,
+            }
         return ticket_id

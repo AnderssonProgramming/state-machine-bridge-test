@@ -15,6 +15,7 @@ from src.services.order_service import OrderService
 def get_order_repository() -> OrderRepository:
     if get_settings().repository_backend == RepositoryBackend.DYNAMODB:
         from src.repositories.dynamodb import DynamoDBOrderRepository
+
         return DynamoDBOrderRepository()
     return InMemoryOrderRepository()
 
@@ -23,6 +24,7 @@ def get_order_repository() -> OrderRepository:
 def get_support_repository() -> SupportRepository:
     if get_settings().repository_backend == RepositoryBackend.DYNAMODB:
         from src.repositories.dynamodb import DynamoDBSupportRepository
+
         return DynamoDBSupportRepository()
     return InMemorySupportRepository()
 
@@ -30,7 +32,9 @@ def get_support_repository() -> SupportRepository:
 @lru_cache
 def get_handler_registry() -> EventHandlerRegistry:
     registry = EventHandlerRegistry()
-    registry.register(EventType.PAYMENT_FAILED.value, PaymentFailedHandler(get_support_repository()))
+    registry.register(
+        EventType.PAYMENT_FAILED.value, PaymentFailedHandler(get_support_repository())
+    )
     return registry
 
 

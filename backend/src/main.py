@@ -26,14 +26,22 @@ app.include_router(chat_router.router)
 
 
 @app.exception_handler(InvalidTransitionError)
-async def handle_invalid_transition(request: Request, exc: InvalidTransitionError) -> JSONResponse:
+async def handle_invalid_transition(
+    request: Request, exc: InvalidTransitionError
+) -> JSONResponse:
     logger.warning("Invalid transition", extra={"error": str(exc)})
-    return JSONResponse(status_code=422, content={"error": "InvalidTransitionError", "detail": str(exc)})
+    return JSONResponse(
+        status_code=422, content={"error": "InvalidTransitionError", "detail": str(exc)}
+    )
 
 
 @app.exception_handler(OrderNotFoundError)
-async def handle_order_not_found(request: Request, exc: OrderNotFoundError) -> JSONResponse:
-    return JSONResponse(status_code=404, content={"error": "OrderNotFoundError", "detail": str(exc)})
+async def handle_order_not_found(
+    request: Request, exc: OrderNotFoundError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=404, content={"error": "OrderNotFoundError", "detail": str(exc)}
+    )
 
 
 @app.get("/health", tags=["health"])

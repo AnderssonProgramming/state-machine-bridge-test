@@ -42,7 +42,9 @@ class Order:
     def __post_init__(self) -> None:
         if not self.history:
             self.history.append(
-                TransitionLog(from_state=None, to_state=self.state.value, event_type=INITIAL_EVENT)
+                TransitionLog(
+                    from_state=None, to_state=self.state.value, event_type=INITIAL_EVENT
+                )
             )
 
     def apply_transition(

@@ -14,4 +14,6 @@ def chat(
     payload: ChatRequest,
     service: Annotated[ChatService, Depends(get_chat_service)],
 ) -> ChatResponse:
-    return ChatResponse(reply=service.reply(payload.message, payload.conversation_history))
+    return ChatResponse(
+        reply=service.reply(payload.message, payload.conversation_history)
+    )

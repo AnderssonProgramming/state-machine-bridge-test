@@ -65,6 +65,11 @@ class DynamoDBSupportRepository(SupportRepository):
     def create_ticket(self, order_id: str, reason: str, amount: float) -> str:
         ticket_id = f"{TICKET_ID_PREFIX}{uuid.uuid4().hex[:TICKET_ID_LENGTH]}"
         self._table.put_item(
-            Item={"ticketId": ticket_id, "orderId": order_id, "reason": reason, "amount": str(amount)}
+            Item={
+                "ticketId": ticket_id,
+                "orderId": order_id,
+                "reason": reason,
+                "amount": str(amount),
+            }
         )
         return ticket_id

@@ -54,9 +54,13 @@ def apply_event(
     service: Annotated[OrderService, Depends(get_order_service)],
 ) -> TransitionResponse:
     try:
-        previous_state, order = service.apply_event(order_id, payload.event_type, payload.metadata)
+        previous_state, order = service.apply_event(
+            order_id, payload.event_type, payload.metadata
+        )
     except ValueError:
-        raise HTTPException(status_code=422, detail=f"Unknown event type: '{payload.event_type}'")
+        raise HTTPException(
+            status_code=422, detail=f"Unknown event type: '{payload.event_type}'"
+        ) from None
     return TransitionResponse(
         order_id=order.order_id,
         previous_state=previous_state,

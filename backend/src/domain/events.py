@@ -1,11 +1,7 @@
-"""Event types that trigger state transitions."""
-
 from enum import Enum
 
 
 class EventType(str, Enum):
-    """All possible events that can trigger a transition."""
-
     PENDING_BIOMETRICAL_VERIFICATION = "pendingBiometricalVerification"
     NO_VERIFICATION_NEEDED = "noVerificationNeeded"
     PAYMENT_FAILED = "paymentFailed"

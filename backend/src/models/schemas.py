@@ -1,5 +1,3 @@
-"""Pydantic request and response schemas (presentation contracts)."""
-
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,8 +6,6 @@ from src.domain.states import OrderState
 
 
 class CreateOrderRequest(BaseModel):
-    """Payload to create a new order."""
-
     model_config = ConfigDict(populate_by_name=True)
 
     product_ids: list[str] = Field(..., alias="productIds", min_length=1)
@@ -17,8 +13,6 @@ class CreateOrderRequest(BaseModel):
 
 
 class EventRequest(BaseModel):
-    """Payload to apply an event to an existing order."""
-
     model_config = ConfigDict(populate_by_name=True)
 
     event_type: str = Field(..., alias="eventType")
@@ -26,8 +20,6 @@ class EventRequest(BaseModel):
 
 
 class TransitionLogResponse(BaseModel):
-    """A single transition entry in the order history."""
-
     model_config = ConfigDict(populate_by_name=True)
 
     from_state: str | None = Field(..., alias="fromState")
@@ -38,8 +30,6 @@ class TransitionLogResponse(BaseModel):
 
 
 class OrderResponse(BaseModel):
-    """Full order representation returned to clients."""
-
     model_config = ConfigDict(populate_by_name=True)
 
     order_id: str = Field(..., alias="orderId")
@@ -52,8 +42,6 @@ class OrderResponse(BaseModel):
 
 
 class TransitionResponse(BaseModel):
-    """Response after a successful transition."""
-
     model_config = ConfigDict(populate_by_name=True)
 
     order_id: str = Field(..., alias="orderId")
@@ -64,8 +52,6 @@ class TransitionResponse(BaseModel):
 
 
 class AvailableEventsResponse(BaseModel):
-    """The list of events currently valid for an order."""
-
     model_config = ConfigDict(populate_by_name=True)
 
     order_id: str = Field(..., alias="orderId")
@@ -74,8 +60,6 @@ class AvailableEventsResponse(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    """Chatbot message payload."""
-
     model_config = ConfigDict(populate_by_name=True)
 
     message: str
@@ -85,6 +69,4 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    """Chatbot reply payload."""
-
     reply: str

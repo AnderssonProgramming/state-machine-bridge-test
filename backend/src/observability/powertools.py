@@ -1,5 +1,3 @@
-"""Centralized AWS Lambda Powertools instances (shared singletons)."""
-
 from aws_lambda_powertools import Logger, Metrics, Tracer
 
 from src.config import get_settings

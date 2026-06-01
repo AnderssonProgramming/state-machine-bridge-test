@@ -1,5 +1,3 @@
-"""Application configuration loaded from environment variables."""
-
 from enum import Enum
 from functools import lru_cache
 
@@ -7,15 +5,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class RepositoryBackend(str, Enum):
-    """Available persistence backends."""
-
     MEMORY = "memory"
     DYNAMODB = "dynamodb"
 
 
 class Settings(BaseSettings):
-    """Strongly-typed application settings."""
-
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     repository_backend: RepositoryBackend = RepositoryBackend.MEMORY
@@ -31,5 +25,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """Return a cached Settings instance."""
     return Settings()

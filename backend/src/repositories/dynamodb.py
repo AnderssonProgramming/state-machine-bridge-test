@@ -1,9 +1,3 @@
-"""DynamoDB repository implementations for production (AWS Lambda).
-
-Amounts are stored as strings to avoid DynamoDB's Decimal/float friction
-and converted back to float on read.
-"""
-
 import uuid
 from dataclasses import asdict
 from typing import Any
@@ -20,33 +14,25 @@ TICKET_ID_LENGTH = 8
 
 
 class DynamoDBOrderRepository(OrderRepository):
-    """Order store backed by a single DynamoDB table."""
-
     def __init__(self) -> None:
         settings = get_settings()
         resource = boto3.resource("dynamodb", region_name=settings.aws_region)
         self._table = resource.Table(settings.dynamodb_table_name)
 
     def save(self, order: Order) -> None:
-        """Persist an order item to DynamoDB."""
         self._table.put_item(Item=self._to_item(order))
 
     def get_by_id(self, order_id: str) -> Order | None:
-        """Fetch and deserialize an order by its id."""
         response = self._table.get_item(Key={"orderId": order_id})
         item = response.get("Item")
-        if item is None:
-            return None
-        return self._from_item(item)
+        return self._from_item(item) if item else None
 
     def list_all(self) -> list[Order]:
-        """Scan and return all orders (acceptable for MVP scale)."""
         response = self._table.scan()
         return [self._from_item(item) for item in response.get("Items", [])]
 
     @staticmethod
     def _to_item(order: Order) -> dict[str, Any]:
-        """Convert an Order entity into a DynamoDB item."""
         return {
             "orderId": order.order_id,
             "productIds": order.product_ids,
@@ -59,7 +45,6 @@ class DynamoDBOrderRepository(OrderRepository):
 
     @staticmethod
     def _from_item(item: dict[str, Any]) -> Order:
-        """Reconstruct an Order entity from a DynamoDB item."""
         return Order(
             product_ids=list(item["productIds"]),
             amount=float(item["amount"]),
@@ -72,22 +57,14 @@ class DynamoDBOrderRepository(OrderRepository):
 
 
 class DynamoDBSupportRepository(SupportRepository):
-    """Support ticket store backed by a DynamoDB table."""
-
     def __init__(self) -> None:
         settings = get_settings()
         resource = boto3.resource("dynamodb", region_name=settings.aws_region)
         self._table = resource.Table(settings.dynamodb_tickets_table_name)
 
     def create_ticket(self, order_id: str, reason: str, amount: float) -> str:
-        """Create a support ticket item and return its id."""
         ticket_id = f"{TICKET_ID_PREFIX}{uuid.uuid4().hex[:TICKET_ID_LENGTH]}"
         self._table.put_item(
-            Item={
-                "ticketId": ticket_id,
-                "orderId": order_id,
-                "reason": reason,
-                "amount": str(amount),
-            }
+            Item={"ticketId": ticket_id, "orderId": order_id, "reason": reason, "amount": str(amount)}
         )
         return ticket_id

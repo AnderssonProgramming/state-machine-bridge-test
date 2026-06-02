@@ -84,8 +84,9 @@
 15. [Deployment](#-deployment)
 16. [Design Decisions (ADRs)](#-design-decisions-adrs)
 17. [Engineering Practices](#-engineering-practices)
-18. [License](#-license)
-19. [References](#-references)
+18. [Rules Engine](#-rules-engine)
+19. [License](#-license)
+20. [References](#-references)
 
 ---
 
@@ -260,27 +261,37 @@ flowchart TD
 state-machine-bridge-test/
 ├── backend/
 │   ├── src/
-│   │   ├── domain/         # entities, state machine, events, exceptions (framework-free)
-│   │   ├── services/       # OrderService, event_handlers/, chat_service
+│   │   ├── domain/         # state machine, order, rules engine models (framework-free)
+│   │   │   ├── rules/      # condition nodes, rules, and execution log models
+│   │   ├── services/       # OrderService, EventHandlers, RulesEngine, ChatService
+│   │   │   ├── rules/      # engine logic, evaluator, and action handlers
 │   │   ├── repositories/   # ABCs + InMemory + DynamoDB implementations
-│   │   ├── handlers/       # FastAPI routers + DI wiring
-│   │   ├── models/         # Pydantic schemas (camelCase API contracts)
+│   │   ├── handlers/       # FastAPI routers (Order, Rule, Chat) + DI wiring
+│   │   ├── models/         # Pydantic schemas (Order, Rule, Dry-run)
 │   │   ├── observability/  # Powertools instances (logger, tracer, metrics)
 │   │   ├── config.py       # typed settings (env-driven)
 │   │   └── main.py         # app + Lambda handler
-│   ├── context/            # chatbot grounding (Sainapsis + Bridge + order SM)
-│   ├── tests/              # unit/ + integration/
+│   ├── context/            # chatbot grounding (Sainapsis + order SM)
+│   ├── scripts/            # backend utility scripts
+│   ├── tests/              # unit/ + integration/ (tests for all layers)
 │   ├── requirements.txt
 │   └── requirements-dev.txt
-├── frontend/               # React + Vite app (Dashboard, Create, Detail, ChatWidget, live diagram)
+├── frontend/               # React + Vite app (Dashboard, Create, Detail, Chat, Diagrams)
+│   ├── src/
+│   │   ├── api/            # typed axios client
+│   │   ├── components/     # UI components (Chat, StateMachineDiagram, StateBadge)
+│   │   ├── pages/          # CreateOrder, Dashboard, OrderDetail
+│   │   └── types.ts        # shared frontend types
 ├── docs/
-│   ├── adr/                # architecture decision records (ADR-001..005)
-│   └── diagrams/           # eraser.io exports (state-machine.png, architecture.png)
+│   ├── adr/                # architecture decision records (ADR-001..006)
+│   └── diagrams/           # diagrams (state machine, architecture)
+├── scripts/                # workspace-level scripts (seed_demo_rule.py)
 ├── .github/workflows/      # ci.yml · codeql.yml · deploy.yml
 ├── pyproject.toml          # black / ruff / mypy / pytest config
 ├── sonar-project.properties
 ├── template.yaml           # AWS SAM infrastructure
 ├── LICENSE                 # Apache 2.0
+├── samconfig.toml          # SAM deployment config
 └── README.md
 ```
 
@@ -295,9 +306,9 @@ state-machine-bridge-test/
 | 1 | Create order with `productIds[]` and `amount`, initial state `Pending` | ✅ |
 | 2 | Process events with `orderId`, `eventType`, and `metadata` | ✅ |
 | 3 | Concurrent multi-order support · error on invalid transition | ✅ |
-| 4 | `paymentFailed` + amount > $1,000 → create support ticket (extensible) | ✅ |
+| 4 | Data-driven Rules Engine for high-value events (e.g. $1k threshold) | ✅ |
 | 5 | Repository pattern for all 3rd-party interactions | ✅ |
-| 6 | Event log + state transition history *(optional)* | ✅ |
+| 6 | Event log + state transition history | ✅ |
 
 ### Frontend Bonus
 
@@ -529,6 +540,51 @@ sam deploy --guided        # first time; CI handles subsequent deploys
 
 ---
 
+## ⚙️ Rules Engine
+
+A dynamic business rules engine layered on top of the state machine, designed so business logic can change **without deploys**.
+
+### Requirements coverage
+
+| # | Requirement | Status |
+| --- | --- | --- |
+| R1 | Create + edit rules at runtime | ✅ `POST/PUT/PATCH/DELETE /rules` |
+| R2 | AND / OR conditions over order attributes | ✅ Nested tree — see `ConditionNode` |
+| R3 | Action: create support tickets | ✅ `create_support_ticket` handler |
+| R4 | Action: modify order (taxes, fees) | ✅ `add_tax`, `add_fee` handlers |
+| R5 | Scalable to new attributes | ✅ `order.attributes: dict[str, Any]` + dotted-path resolver |
+| R6 | Scalable to new actions | ✅ Open/Closed `ActionHandlerRegistry` |
+| R7 | Auditability | ✅ `RuleExecutionLog` written for every evaluation |
+| R8 | Safe to roll out | ✅ `POST /rules/{id}/dry-run` — no side effects |
+
+### Live demo sequence
+
+```bash
+# 1) Hardcoded behavior already works
+curl -X POST localhost:8000/orders -H 'content-type: application/json' \
+  -d '{"productIds":["p1"],"amount":1500}'
+curl -X POST localhost:8000/orders/<ord>/events -H 'content-type: application/json' \
+  -d '{"eventType":"paymentFailed"}'          # → Cancelled, ticket created
+
+# 2) Express the same rule as data
+python scripts/seed_demo_rule.py              # → rule-XXXX
+
+# 3) Dry-run before going live
+curl -X POST localhost:8000/rules/<rule>/dry-run -H 'content-type: application/json' \
+  -d '{"productIds":["p1"],"amount":2000}'    # → {"matched":true,"actions":[{"dryRun":true}]}
+
+# 4) Edit the threshold to $500 — no deploy needed
+curl -X PUT localhost:8000/rules/<rule> -H 'content-type: application/json' \
+  -d '{"condition":{"type":"comparison","field":"amount","operator":"gt","value":500}}'
+
+# 5) Inspect the audit trail
+curl localhost:8000/rules/_logs/by-order/<ord>
+```
+
+> In the original test, this behavior was a Python class that needed a deploy to change. Now it's a row in a table. The dry-run endpoint and the audit log make it safe enough to hand to operations.
+
+---
+
 ## 📐 Design Decisions (ADRs)
 
 Recorded under `docs/adr/`:
@@ -540,6 +596,7 @@ Recorded under `docs/adr/`:
 | **003** | Frontend stack: React + Vite + TypeScript + Tailwind + reactflow |
 | **004** | AI chatbot: Claude API + compiled `sainapsis_context.txt` |
 | **005** | Quality gates: Black, Ruff, mypy, SonarCloud, CodeQL, pip-audit, ≥85% coverage |
+| **006** | Dynamic rules engine: AND/OR tree, dotted-path resolver, `ActionHandlerRegistry` |
 
 > **On DuckDNS + Certbot:** the original plan considered DuckDNS with Certbot for
 > HTTPS. `ADR-002` deliberately **rejected** this in favor of API Gateway's native

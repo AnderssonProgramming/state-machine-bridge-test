@@ -5,13 +5,14 @@ from mangum import Mangum
 
 from src.config import get_settings
 from src.domain.exceptions import InvalidTransitionError, OrderNotFoundError
-from src.handlers import chat_router, order_router
+from src.domain.rules.exceptions import RuleNotFoundError, UnknownActionError
+from src.handlers import chat_router, order_router, rule_router
 from src.observability.powertools import logger
 
 app = FastAPI(
-    title="Order Processing State Machine",
+    title="Order Processing State Machine + Rules Engine",
     description="Sainapsis Backend Technical Test — Andersson Sánchez",
-    version="1.0.0",
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -23,6 +24,7 @@ app.add_middleware(
 
 app.include_router(order_router.router)
 app.include_router(chat_router.router)
+app.include_router(rule_router.router)
 
 
 @app.exception_handler(InvalidTransitionError)
@@ -41,6 +43,24 @@ async def handle_order_not_found(
 ) -> JSONResponse:
     return JSONResponse(
         status_code=404, content={"error": "OrderNotFoundError", "detail": str(exc)}
+    )
+
+
+@app.exception_handler(RuleNotFoundError)
+async def handle_rule_not_found(
+    request: Request, exc: RuleNotFoundError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=404, content={"error": "RuleNotFoundError", "detail": str(exc)}
+    )
+
+
+@app.exception_handler(UnknownActionError)
+async def handle_unknown_action(
+    request: Request, exc: UnknownActionError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422, content={"error": "UnknownActionError", "detail": str(exc)}
     )
 
 

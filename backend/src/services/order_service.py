@@ -9,6 +9,7 @@ from src.domain.state_machine import StateMachine
 from src.observability.powertools import logger, metrics, tracer
 from src.repositories.base import OrderRepository
 from src.services.event_handlers.base import EventHandlerRegistry
+from src.services.rules.engine import RuleEngineService
 
 
 class OrderService:
@@ -17,14 +18,25 @@ class OrderService:
         order_repository: OrderRepository,
         state_machine: StateMachine,
         handler_registry: EventHandlerRegistry,
+        rule_engine: RuleEngineService,
     ) -> None:
         self._orders = order_repository
         self._state_machine = state_machine
         self._handlers = handler_registry
+        self._rule_engine = rule_engine
 
     @tracer.capture_method
-    def create_order(self, product_ids: list[str], amount: float) -> Order:
-        order = Order(product_ids=product_ids, amount=amount)
+    def create_order(
+        self,
+        product_ids: list[str],
+        amount: float,
+        attributes: dict[str, Any] | None = None,
+    ) -> Order:
+        order = Order(
+            product_ids=product_ids, amount=amount, attributes=attributes or {}
+        )
+        self._orders.save(order)
+        self._rule_engine.evaluate_for("order_created", order)
         self._orders.save(order)
         logger.info("Order created", extra={"order_id": order.order_id})
         metrics.add_metric(name="OrdersCreated", unit=MetricUnit.Count, value=1)
@@ -44,7 +56,9 @@ class OrderService:
             handler.handle(order, metadata)
 
         order.apply_transition(next_state, event_type, metadata)
+        self._rule_engine.evaluate_for(f"event:{event_type}", order)
         self._orders.save(order)
+
         logger.info(
             "Order transitioned",
             extra={

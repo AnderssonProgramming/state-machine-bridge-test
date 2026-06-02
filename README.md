@@ -471,7 +471,7 @@ POST /orders/{orderId}/events
 ```json
 {
   "error": "InvalidTransitionError",
-  "detail": "No transition defined for event 'itemDispatched' from state 'Pending'."
+  "detail": "No transition defined for event 'itemDispatched.' from state 'Pending'."
 }
 ```
 
